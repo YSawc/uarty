@@ -1,0 +1,16 @@
+/target
+**/*.sv
+**/*.f
+**/*.qpf
+**/*.qsf.bak
+**/*_description.txt
+**/*_model_dump.txt
+**/*.qws
+**/simulation/
+**/output_files/
+**/incremental_db/
+**/devkits/
+**/db/
+**/*/*.stp
+.qsys_edit/
+uarty.qsf

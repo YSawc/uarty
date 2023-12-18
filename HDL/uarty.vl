@@ -1,0 +1,28 @@
+module main (
+    CLK   : input  logic        ,
+    RST   : input  logic        ,
+    KEY   : input  logic<3>     ,
+    HEX0  : output logic<7>     ,
+    HEX1  : output logic<7>     ,
+    HEX2  : output logic<7>     ,
+    GPIO_0: output logic    [36],
+) {
+    var debug: logic<7>;
+    var WE   : logic   ;
+    assign WE    = 1;
+    var BUSY : logic;
+    assign BUSY  = 0;
+    inst tx: Tx (
+        CLK                 ,
+        RST                 ,
+        WE                  ,
+        DATA_IN : 7'b1100000,
+        data_out: debug     ,
+        busy    : BUSY      ,
+    );
+
+    inst decoder1: SegmentDecoder (
+        DIN : debug,
+        nHEX: HEX0 ,
+    );
+}
