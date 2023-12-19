@@ -4,6 +4,7 @@ module Rx #(
     CLK     : input  logic   ,
     RST     : input  logic   ,
     DATA_IN : input  logic   ,
+    RE      : output logic   ,
     data_out: output logic<8>,
     busy    : output logic   ,
 ) {
@@ -20,14 +21,13 @@ module Rx #(
     var bit_count  : logic <5>;
     var n_bit_count: logic <5>;
 
-    // assign data_out = data_reg;
-
     always_comb {
         n_wait_count = wait_count;
         n_bit_count  = bit_count;
         n_status     = status;
         n_data_reg   = data_reg;
         data_out     = 0;
+        RE           = 0;
         case status {
             Status::idle: {
                 busy = 0;
@@ -42,6 +42,7 @@ module Rx #(
                     if bit_count == 9 {
                         n_status    = Status::idle;
                         n_bit_count = 0;
+                        RE          = 1;
                         data_out    = data_reg[7:0];
                     } else {
                         n_status    =  Status::receive;

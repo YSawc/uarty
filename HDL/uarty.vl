@@ -3,8 +3,6 @@ module main (
     RST   : input  logic        ,
     KEY   : input  logic<3>     ,
     HEX0  : output logic<7>     ,
-    HEX1  : output logic<7>     ,
-    HEX2  : output logic<7>     ,
     GPIO_0: output logic    [36],
 ) {
     var debug : logic<8>;
@@ -22,16 +20,20 @@ module main (
         busy    : BUSY      ,
     );
 
+    var RE              : logic;
+    assign RE               = 0;
+    var enable_read_data: logic<8>;
     inst rx: Rx (
         CLK               ,
         RST               ,
         DATA_IN : debug[0],
+        RE                ,
         data_out: debug2  ,
         busy    : BUSY    ,
     );
 
     inst decoder1: SegmentDecoder (
-        DIN : debug2,
-        nHEX: HEX0  ,
+        DIN : enable_read_data,
+        nHEX: HEX0            ,
     );
 }
