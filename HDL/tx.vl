@@ -32,8 +32,19 @@ module Tx #(
             Status::idle: {
                 busy = 0;
                 if WE {
-                    n_status   = Status::send;
-                    n_data_reg = {1'b1, DATA_IN, 1'b0};
+                    if wait_count == wait_div {
+                        n_wait_count = 0;
+                        if bit_count == 9 {
+                            n_status    = Status::send;
+                            n_data_reg  = {1'b1, DATA_IN, 1'b0};
+                            n_bit_count = 0;
+                        } else {
+                            n_data_reg  =  {10'h3ff};
+                            n_bit_count += 1;
+                        }
+                    } else {
+                        n_wait_count += 1;
+                    }
                 }
             }
             Status::send: {
@@ -59,7 +70,7 @@ module Tx #(
         if_reset {
             status     = Status::idle;
             wait_count = 0;
-            data_reg   = 0;
+            data_reg   = 10'h3ff;
             bit_count  = 0;
         } else {
             status     = n_status;

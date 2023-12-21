@@ -16,7 +16,7 @@ module main (
         RST                 ,
         WE                  ,
         DATA_IN : 7'b0100110,
-        data_out: debug     ,
+        data_out: GPIO_0[1] ,
         busy    : BUSY      ,
     );
 
@@ -28,7 +28,7 @@ module main (
         RST               ,
         DATA_IN : debug[0],
         RE                ,
-        data_out: debug2  ,
+        data_out: debug   ,
         busy    : BUSY    ,
     );
 
