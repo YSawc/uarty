@@ -5,12 +5,10 @@ module main (
     HEX0  : output logic<7>     ,
     GPIO_0: output logic    [36],
 ) {
-    var debug : logic<8>;
-    var debug2: logic<8>;
-    var WE    : logic   ;
-    assign WE     = 1;
-    var BUSY  : logic;
-    assign BUSY   = 0;
+    var WE  : logic;
+    assign WE   = 1;
+    var BUSY: logic;
+    assign BUSY = 0;
     inst tx: Tx (
         CLK                 ,
         RST                 ,
@@ -23,13 +21,14 @@ module main (
     var RE              : logic;
     assign RE               = 0;
     var enable_read_data: logic<8>;
+    var read_buffer     : logic<8>;
     inst rx: Rx (
-        CLK               ,
-        RST               ,
-        DATA_IN : debug[0],
-        RE                ,
-        data_out: debug   ,
-        busy    : BUSY    ,
+        CLK                  ,
+        RST                  ,
+        DATA_IN : GPIO_0[1]  ,
+        RE                   ,
+        data_out: read_buffer,
+        busy    : BUSY       ,
     );
 
     inst decoder1: SegmentDecoder (
