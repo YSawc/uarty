@@ -1,5 +1,6 @@
 module Rx #(
-    parameter wait_div: logic<10> = 434,
+    parameter CLOCK_FREQUENCY: logic<30> = 32'd50000000,
+    parameter BAUD_RATE      : logic<30> = 32'd115200  ,
 ) (
     CLK     : input  logic   ,
     RST     : input  logic   ,
@@ -8,6 +9,8 @@ module Rx #(
     data_out: output logic<8>,
     busy    : output logic   ,
 ) {
+    var wait_div    : logic<32>;
+    assign wait_div     = CLOCK_FREQUENCY / BAUD_RATE;
     var wait_count  : logic<10>;
     var n_wait_count: logic<10>;
     enum Status: logic<3>  {
