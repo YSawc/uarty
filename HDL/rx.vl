@@ -2,12 +2,13 @@ module Rx #(
     parameter CLOCK_FREQUENCY: logic<30> = 32'd50000000,
     parameter BAUD_RATE      : logic<30> = 32'd115200  ,
 ) (
-    CLK     : input  logic   ,
-    RST     : input  logic   ,
-    DATA_IN : input  logic   ,
-    RE      : output logic   ,
-    data_out: output logic<8>,
-    busy    : output logic   ,
+    CLK        : input  logic   ,
+    RST        : input  logic   ,
+    DATA_IN    : input  logic   ,
+    RE         : input  logic   ,
+    read_finish: output logic   ,
+    data_out   : output logic<8>,
+    busy       : output logic   ,
 ) {
     var wait_div    : logic<32>;
     assign wait_div     = CLOCK_FREQUENCY / BAUD_RATE;
@@ -17,29 +18,29 @@ module Rx #(
         idle,
         receive,
     }
-    var status     : Status   ;
-    var n_status   : Status   ;
-    var data_reg   : logic <9>;
-    var n_data_reg : logic <9>;
-    var bit_count  : logic <5>;
-    var n_bit_count: logic <5>;
-    var n_RE       : logic    ;
+    var status       : Status   ;
+    var n_status     : Status   ;
+    var data_reg     : logic <9>;
+    var n_data_reg   : logic <9>;
+    var bit_count    : logic <5>;
+    var n_bit_count  : logic <5>;
+    var n_read_finish: logic    ;
 
     always_comb {
-        n_wait_count = wait_count;
-        n_bit_count  = bit_count;
-        n_status     = status;
-        n_data_reg   = data_reg;
-        n_RE         = RE;
-        if RE {
+        n_wait_count  = wait_count;
+        n_bit_count   = bit_count;
+        n_status      = status;
+        n_data_reg    = data_reg;
+        n_read_finish = read_finish;
+        if read_finish {
             data_out = data_reg[8:1];
         } else {
             data_out = 0;
         }
         case status {
             Status::idle: {
-                busy = 0;
-                n_RE = 0;
+                busy          = 0;
+                n_read_finish = 0;
                 if DATA_IN == 0 {
                     n_status = Status::receive;
                 }
@@ -56,7 +57,7 @@ module Rx #(
                         n_data_reg  =  {DATA_IN, data_reg[8:1]};
                         n_bit_count += 1;
                         if bit_count == 8 {
-                            n_RE = 1;
+                            n_read_finish = 1;
                         }
                     }
                 } else {
@@ -68,17 +69,17 @@ module Rx #(
 
     always_ff (posedge CLK, async_high RST) {
         if_reset {
-            status     = Status::idle;
-            wait_count = 0;
-            data_reg   = 0;
-            bit_count  = 0;
-            RE         = 0;
+            status      = Status::idle;
+            wait_count  = 0;
+            data_reg    = 0;
+            bit_count   = 0;
+            read_finish = 0;
         } else {
-            status     = n_status;
-            wait_count = n_wait_count;
-            data_reg   = n_data_reg;
-            bit_count  = n_bit_count;
-            RE         = n_RE;
+            status      = n_status;
+            wait_count  = n_wait_count;
+            data_reg    = n_data_reg;
+            bit_count   = n_bit_count;
+            read_finish = n_read_finish;
         }
     }
 }
