@@ -42,16 +42,15 @@ module Rx #(
         }
         case status {
             Status::idle: {
-                busy          = 0;
-                n_read_finish = 0;
+                busy = 0;
                 if RE && DATA_IN == 0 {
                     n_status = Status::receive;
                 }
             }
             Status::receive: {
                 busy = 1;
-                if wait_count == wait_div {
-                    if bit_count == 9 {
+                if wait_count >= wait_div {
+                    if bit_count >= 9 {
                         if rising_finish {
                             n_read_finish = 1;
                             n_wait_count  = 0;

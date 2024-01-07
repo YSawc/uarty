@@ -1,10 +1,8 @@
 module main (
-    CLK     : input  logic   ,
-    RST     : input  logic   ,
-    KEY     : input  logic<3>,
-    GPIO_0_1: input  logic   ,
-    HEX0    : output logic<7>,
-    GPIO_0_0: output logic   ,
+    CLK     : input  logic,
+    RST     : input  logic,
+    GPIO_0_1: input  logic,
+    GPIO_0_0: output logic,
 ) {
     var RE          : logic   ;
     var read_finish : logic   ;
@@ -32,10 +30,5 @@ module main (
         DATA_IN : 7'b0110010  ,
         data_out: GPIO_0_0    ,
         busy    : write_busy  ,
-    );
-
-    inst decoder1: SegmentDecoder (
-        DIN : read_buffer,
-        nHEX: HEX0       ,
     );
 }
