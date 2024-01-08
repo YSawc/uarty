@@ -2,13 +2,12 @@ module Rx #(
     parameter CLOCK_FREQUENCY: logic<30> = 32'd50000000,
     parameter BAUD_RATE      : logic<30> = 32'd115200  ,
 ) (
-    CLK        : input  logic   ,
-    RST        : input  logic   ,
-    DATA_IN    : input  logic   ,
-    RE         : input  logic   ,
-    read_finish: output logic   ,
-    data_out   : output logic<8>,
-    busy       : output logic   ,
+    CLK     : input  logic   ,
+    RST     : input  logic   ,
+    DATA_IN : input  logic   ,
+    RE      : input  logic   ,
+    data_out: output logic<8>,
+    busy    : output logic   ,
 ) {
     var wait_div    : logic<32>;
     assign wait_div     = CLOCK_FREQUENCY / BAUD_RATE;
@@ -24,6 +23,7 @@ module Rx #(
     var n_data_reg     : logic <9>;
     var bit_count      : logic <5>;
     var n_bit_count    : logic <5>;
+    var read_finish    : logic    ;
     var n_read_finish  : logic    ;
     var rising_finish  : logic    ;
     var n_rising_finish: logic    ;
