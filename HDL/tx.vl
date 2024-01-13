@@ -9,11 +9,13 @@ module Tx #(
     DATA_IN : input  logic<8>,
     data_out: output logic   ,
     busy    : output logic   ,
+    finish  : output logic   ,
 ) {
     var wait_div    : logic<32>;
     assign wait_div     = CLOCK_FREQUENCY / BAUD_RATE;
     var wait_count  : logic<10>;
     var n_wait_count: logic<10>;
+    var n_busy      : logic    ;
     enum Status: logic<3>  {
         idle,
         send,
@@ -24,6 +26,7 @@ module Tx #(
     var n_data_reg : logic <10>;
     var bit_count  : logic <5> ;
     var n_bit_count: logic <5> ;
+    var n_finish   : logic     ;
 
     assign data_out = data_reg[0];
 
@@ -32,9 +35,12 @@ module Tx #(
         n_bit_count  = bit_count;
         n_status     = status;
         n_data_reg   = data_reg;
+        n_busy       = busy;
+        n_finish     = finish;
         case status {
             Status::idle: {
-                busy = 0;
+                n_busy   = 0;
+                n_finish = 0;
                 if WE {
                     if wait_count == wait_div {
                         n_wait_count = 0;
@@ -52,12 +58,13 @@ module Tx #(
                 }
             }
             Status::send: {
-                busy = 1;
+                n_busy = 1;
                 if wait_count == wait_div {
                     n_wait_count = 0;
                     if bit_count == 9 {
                         n_status    = Status::idle;
                         n_bit_count = 0;
+                        n_finish    = 1;
                     } else {
                         n_status    =  Status::send;
                         n_data_reg  =  {1'b1, data_reg[9:1]};
@@ -76,11 +83,15 @@ module Tx #(
             wait_count = 0;
             data_reg   = 10'h3ff;
             bit_count  = 0;
+            busy       = 0;
+            finish     = 0;
         } else {
             status     = n_status;
             wait_count = n_wait_count;
             data_reg   = n_data_reg;
             bit_count  = n_bit_count;
+            busy       = n_busy;
+            finish     = n_finish;
         }
     }
 }
