@@ -39,8 +39,7 @@ module Tx #(
         n_finish     = finish;
         case status {
             Status::idle: {
-                n_busy   = 0;
-                n_finish = 0;
+                n_busy = 0;
                 if WE {
                     if wait_count == wait_div {
                         n_wait_count = 0;
