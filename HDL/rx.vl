@@ -14,7 +14,7 @@ module Rx #(
     assign wait_div     = CLOCK_FREQUENCY / BAUD_RATE;
     var wait_count  : logic<10>;
     var n_wait_count: logic<10>;
-    enum Status: logic<3>  {
+    enum Status: logic     {
         idle,
         receive,
     }

@@ -16,7 +16,7 @@ module Tx #(
     var wait_count  : logic<10>;
     var n_wait_count: logic<10>;
     var n_busy      : logic    ;
-    enum Status: logic<3>  {
+    enum Status: logic     {
         idle,
         send,
     }
