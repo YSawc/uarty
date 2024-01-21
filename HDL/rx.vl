@@ -24,6 +24,7 @@ module Rx #(
     var n_data_reg     : logic <9>;
     var bit_count      : logic <5>;
     var n_bit_count    : logic <5>;
+    var n_busy         : logic    ;
     var n_finish       : logic    ;
     var rising_finish  : logic    ;
     var n_rising_finish: logic    ;
@@ -34,6 +35,7 @@ module Rx #(
         n_status        = status;
         n_data_reg      = data_reg;
         n_finish        = finish;
+        n_busy          = busy;
         n_rising_finish = rising_finish;
         if finish {
             data_out = data_reg[8:1];
@@ -42,16 +44,16 @@ module Rx #(
         }
         case status {
             Status::idle: {
-                busy = 0;
                 if RE && DATA_IN == 0 {
+                    n_busy   = 1;
                     n_status = Status::receive;
                 }
             }
             Status::receive: {
-                busy = 1;
                 if wait_count >= wait_div {
                     if bit_count >= 9 {
                         if rising_finish {
+                            n_busy       = 1;
                             n_finish     = 1;
                             n_wait_count = 0;
                             n_status     = Status::idle;
@@ -80,11 +82,13 @@ module Rx #(
             bit_count     = 0;
             finish        = 0;
             rising_finish = 0;
+            busy          = 0;
         } else {
             status        = n_status;
             wait_count    = n_wait_count;
             data_reg      = n_data_reg;
             bit_count     = n_bit_count;
+            busy          = n_busy;
             finish        = n_finish;
             rising_finish = n_rising_finish;
         }

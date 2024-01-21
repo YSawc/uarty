@@ -3,6 +3,7 @@ module Rts (
     RST     : input  logic,
     EN      : input  logic,
     data_out: output logic,
+    busy    : output logic,
     finish  : output logic,
 ) {
     enum Status: logic {
@@ -11,6 +12,7 @@ module Rts (
     }
     var status    : Status;
     var n_status  : Status;
+    var n_busy    : logic ;
     var n_finish  : logic ;
     var n_data_out: logic ;
 
@@ -22,6 +24,7 @@ module Rts (
             Status::disable: {
                 if EN {
                     n_status   = Status::enable;
+                    n_busy     = 1;
                     n_data_out = 0;
                 }
             }
@@ -29,6 +32,7 @@ module Rts (
                 if !EN {
                     n_status   = Status::disable;
                     n_data_out = 1;
+                    n_busy     = 0;
                     n_finish   = 1;
                 }
             }

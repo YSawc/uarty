@@ -39,11 +39,11 @@ module Tx #(
         n_finish     = finish;
         case status {
             Status::idle: {
-                n_busy = 0;
                 if WE {
                     if wait_count == wait_div {
                         n_wait_count = 0;
                         if bit_count == 9 {
+                            n_busy      = 1;
                             n_status    = Status::send;
                             n_data_reg  = {1'b1, DATA_IN, 1'b0};
                             n_bit_count = 0;
@@ -57,12 +57,12 @@ module Tx #(
                 }
             }
             Status::send: {
-                n_busy = 1;
                 if wait_count == wait_div {
                     n_wait_count = 0;
                     if bit_count == 9 {
                         n_status    = Status::idle;
                         n_bit_count = 0;
+                        n_busy      = 0;
                         n_finish    = 1;
                     } else {
                         n_status    =  Status::send;
