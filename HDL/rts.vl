@@ -1,0 +1,49 @@
+module Rts (
+    CLK     : input  logic,
+    RST     : input  logic,
+    EN      : input  logic,
+    data_out: output logic,
+    finish  : output logic,
+) {
+    enum Status: logic {
+        disable,
+        enable,
+    }
+    var status    : Status;
+    var n_status  : Status;
+    var n_finish  : logic ;
+    var n_data_out: logic ;
+
+    always_comb {
+        n_status   = status;
+        n_finish   = finish;
+        n_data_out = data_out;
+        case status {
+            Status::disable: {
+                if EN {
+                    n_status   = Status::enable;
+                    n_data_out = 0;
+                }
+            }
+            Status::enable: {
+                if !EN {
+                    n_status   = Status::disable;
+                    n_data_out = 1;
+                    n_finish   = 1;
+                }
+            }
+        }
+    }
+
+    always_ff (posedge CLK, async_high RST) {
+        if_reset {
+            status   = Status::disable;
+            data_out = 1;
+            finish   = 0;
+        } else {
+            status   = n_status;
+            data_out = n_data_out;
+            finish   = n_finish;
+        }
+    }
+}
