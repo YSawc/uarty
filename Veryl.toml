@@ -1,6 +1,6 @@
 [project]
 name = "uarty"
-version = "0.1.4"
+version = "0.1.5"
 
 [build]
 target = {type = "directory", path = "HDL/sv"}
