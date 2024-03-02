@@ -1,4 +1,4 @@
-module Tx #(
+pub module Tx #(
     parameter CLOCK_FREQUENCY: logic<30> = 32'd50000000,
     parameter BAUD_RATE      : logic<30> = 32'd115200  ,
 

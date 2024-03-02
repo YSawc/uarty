@@ -1,4 +1,4 @@
-module Rts (
+pub module Rts (
     CLK     : input  logic,
     RST     : input  logic,
     EN      : input  logic,
