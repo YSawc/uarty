@@ -1,6 +1,6 @@
 pub module Rx #(
-    parameter CLOCK_FREQUENCY: logic<30> = 32'd50000000,
-    parameter BAUD_RATE      : logic<30> = 32'd115200  ,
+    param CLOCK_FREQUENCY: logic<30> = 32'd50000000,
+    param BAUD_RATE      : logic<30> = 32'd115200  ,
 ) (
     CLK     : input  logic   ,
     RST     : input  logic   ,
