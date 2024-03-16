@@ -3,96 +3,95 @@ pub module Tx #(
     param BAUD_RATE      : logic<30> = 32'd115200  ,
 
 ) (
-    CLK     : input  logic   ,
-    RST     : input  logic   ,
-    WE      : input  logic   ,
-    DATA_IN : input  logic<8>,
-    data_out: output logic   ,
-    busy    : output logic   ,
-    finish  : output logic   ,
+    i_clk   : input  logic   ,
+    i_rst   : input  logic   ,
+    i_we    : input  logic   ,
+    i_data  : input  logic<8>,
+    o_data  : output logic   ,
+    o_busy  : output logic   ,
+    o_finish: output logic   ,
 ) {
-    var wait_div    : logic<32>;
-    assign wait_div     = CLOCK_FREQUENCY / BAUD_RATE;
-    var wait_count  : logic<10>;
-    var n_wait_count: logic<10>;
-    var n_busy      : logic    ;
+    let wait_div       : logic<32> = CLOCK_FREQUENCY / BAUD_RATE;
+    var wait_count     : logic<10>;
+    var wait_count_next: logic<10>;
+    var o_busy_next    : logic    ;
     enum Status: logic     {
         idle,
         send,
     }
-    var status     : Status    ;
-    var n_status   : Status    ;
-    var data_reg   : logic <10>;
-    var n_data_reg : logic <10>;
-    var bit_count  : logic <5> ;
-    var n_bit_count: logic <5> ;
-    var n_finish   : logic     ;
+    var status        : Status    ;
+    var status_next   : Status    ;
+    var data_buf      : logic <10>;
+    var data_buf_next : logic <10>;
+    var bit_count     : logic <5> ;
+    var bit_count_next: logic <5> ;
+    var o_finish_next : logic     ;
 
-    assign data_out = data_reg[0];
+    assign o_data = data_buf[0];
 
     always_comb {
-        n_wait_count = wait_count;
-        n_bit_count  = bit_count;
-        n_status     = status;
-        n_data_reg   = data_reg;
-        n_busy       = busy;
-        n_finish     = finish;
+        wait_count_next = wait_count;
+        bit_count_next  = bit_count;
+        status_next     = status;
+        data_buf_next   = data_buf;
+        o_busy_next     = o_busy;
+        o_finish_next   = o_finish;
         case status {
             Status::idle: {
-                if WE {
+                if i_we {
                     if wait_count == wait_div {
-                        n_wait_count = 0;
+                        wait_count_next = 0;
                         if bit_count == 9 {
-                            n_busy      = 1;
-                            n_status    = Status::send;
-                            n_data_reg  = {1'b1, DATA_IN, 1'b0};
-                            n_bit_count = 0;
+                            o_busy_next    = 1;
+                            status_next    = Status::send;
+                            data_buf_next  = {1'b1, i_data, 1'b0};
+                            bit_count_next = 0;
                         } else {
-                            n_data_reg  =  {10'h3ff};
-                            n_bit_count += 1;
+                            data_buf_next  =  {10'h3ff};
+                            bit_count_next += 1;
                         }
                     } else {
-                        n_wait_count += 1;
+                        wait_count_next += 1;
                     }
                 }
             }
             Status::send: {
                 if wait_count == wait_div {
-                    n_wait_count =  0;
-                    n_bit_count  += 1;
+                    wait_count_next =  0;
+                    bit_count_next  += 1;
                     if bit_count == 10 {
-                        n_finish    = 0;
-                        n_status    = Status::idle;
-                        n_bit_count = 0;
+                        o_finish_next  = 0;
+                        status_next    = Status::idle;
+                        bit_count_next = 0;
                     } else if bit_count == 9 {
-                        n_finish = 1;
-                        n_busy   = 0;
+                        o_finish_next = 1;
+                        o_busy_next   = 0;
                     } else {
-                        n_status   = Status::send;
-                        n_data_reg = {1'b1, data_reg[9:1]};
+                        status_next   = Status::send;
+                        data_buf_next = {1'b1, data_buf[9:1]};
                     }
                 } else {
-                    n_wait_count += 1;
+                    wait_count_next += 1;
                 }
             }
         }
     }
 
-    always_ff (posedge CLK, async_high RST) {
+    always_ff (posedge i_clk, async_high i_rst) {
         if_reset {
             status     = Status::idle;
             wait_count = 0;
-            data_reg   = 10'h3ff;
+            data_buf   = 10'h3ff;
             bit_count  = 0;
-            busy       = 0;
-            finish     = 0;
+            o_busy     = 0;
+            o_finish   = 0;
         } else {
-            status     = n_status;
-            wait_count = n_wait_count;
-            data_reg   = n_data_reg;
-            bit_count  = n_bit_count;
-            busy       = n_busy;
-            finish     = n_finish;
+            status     = status_next;
+            wait_count = wait_count_next;
+            data_buf   = data_buf_next;
+            bit_count  = bit_count_next;
+            o_busy     = o_busy_next;
+            o_finish   = o_finish_next;
         }
     }
 }

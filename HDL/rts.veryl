@@ -1,53 +1,53 @@
 pub module Rts (
-    CLK     : input  logic,
-    RST     : input  logic,
-    EN      : input  logic,
-    data_out: output logic,
-    busy    : output logic,
-    finish  : output logic,
+    i_clk   : input  logic,
+    i_rst   : input  logic,
+    i_en    : input  logic,
+    o_data  : output logic,
+    o_busy  : output logic,
+    o_finish: output logic,
 ) {
     enum Status: logic {
         disable,
         enable,
     }
-    var status    : Status;
-    var n_status  : Status;
-    var n_busy    : logic ;
-    var n_finish  : logic ;
-    var n_data_out: logic ;
+    var status       : Status;
+    var status_next  : Status;
+    var busy_next    : logic ;
+    var o_finish_next: logic ;
+    var o_data_next  : logic ;
 
     always_comb {
-        n_status   = status;
-        n_finish   = finish;
-        n_data_out = data_out;
+        status_next   = status;
+        o_finish_next = o_finish;
+        o_data_next   = o_data;
         case status {
             Status::disable: {
-                if EN {
-                    n_status   = Status::enable;
-                    n_busy     = 1;
-                    n_data_out = 0;
+                if i_en {
+                    status_next = Status::enable;
+                    busy_next   = 1;
+                    o_data_next = 0;
                 }
             }
             Status::enable: {
-                if !EN {
-                    n_status   = Status::disable;
-                    n_data_out = 1;
-                    n_busy     = 0;
-                    n_finish   = 1;
+                if !i_en {
+                    status_next   = Status::disable;
+                    o_data_next   = 1;
+                    busy_next     = 0;
+                    o_finish_next = 1;
                 }
             }
         }
     }
 
-    always_ff (posedge CLK, async_high RST) {
+    always_ff (posedge i_clk, async_high i_rst) {
         if_reset {
             status   = Status::disable;
-            data_out = 1;
-            finish   = 0;
+            o_data   = 1;
+            o_finish = 0;
         } else {
-            status   = n_status;
-            data_out = n_data_out;
-            finish   = n_finish;
+            status   = status_next;
+            o_data   = o_data_next;
+            o_finish = o_finish_next;
         }
     }
 }
