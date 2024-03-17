@@ -5,9 +5,9 @@ pub module Tx #(
 ) (
     i_clk   : input  logic   ,
     i_rst   : input  logic   ,
-    i_we    : input  logic   ,
+    i_en    : input  logic   ,
     i_data  : input  logic<8>,
-    o_data  : output logic   ,
+    o_tx    : output logic   ,
     o_busy  : output logic   ,
     o_finish: output logic   ,
 ) {
@@ -27,7 +27,7 @@ pub module Tx #(
     var bit_count_next: logic <5> ;
     var o_finish_next : logic     ;
 
-    assign o_data = data_buf[0];
+    assign o_tx = data_buf[0];
 
     always_comb {
         wait_count_next = wait_count;
@@ -38,7 +38,7 @@ pub module Tx #(
         o_finish_next   = o_finish;
         case status {
             Status::idle: {
-                if i_we {
+                if i_en {
                     if wait_count == wait_div {
                         wait_count_next = 0;
                         if bit_count == 9 {

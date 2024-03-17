@@ -4,8 +4,8 @@ pub module Rx #(
 ) (
     i_clk   : input  logic   ,
     i_rst   : input  logic   ,
-    i_data  : input  logic   ,
-    i_re    : input  logic   ,
+    i_en    : input  logic   ,
+    i_rx    : input  logic   ,
     o_data  : output logic<8>,
     o_busy  : output logic   ,
     o_finish: output logic   ,
@@ -37,7 +37,7 @@ pub module Rx #(
         o_data_next     = o_data;
         case status {
             Status::idle: {
-                if i_re && i_data == 0 {
+                if i_en && i_rx == 0 {
                     o_busy_next = 1;
                     status_next = Status::receive;
                 }
@@ -51,7 +51,7 @@ pub module Rx #(
                             wait_count_next = 0;
                             status_next     = Status::idle;
                             bit_count_next  = 0;
-                        } else if i_data == 1 {
+                        } else if i_rx == 1 {
                             o_finish_next = 1;
                             o_data_next   = data_reg[8:1];
                         }
@@ -59,7 +59,7 @@ pub module Rx #(
                         status_next     =  Status::receive;
                         bit_count_next  += 1;
                         wait_count_next =  0;
-                        data_reg_next   =  {i_data, data_reg[8:1]};
+                        data_reg_next   =  {i_rx, data_reg[8:1]};
                     }
                 } else {
                     wait_count_next += 1;
