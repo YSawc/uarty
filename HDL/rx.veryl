@@ -53,15 +53,22 @@ pub module Rx #(
                             bit_count_next  = 0;
                         } else if i_rx == 1 {
                             o_finish_next = 1;
-                            o_data_next   = data_reg[8:1];
                         }
                     } else {
                         status_next     =  Status::receive;
                         bit_count_next  += 1;
                         wait_count_next =  0;
-                        data_reg_next   =  {i_rx, data_reg[8:1]};
                     }
                 } else {
+                    if wait_count == (wait_div / 2) {
+                        if bit_count >= 9 {
+                            if i_rx == 1 {
+                                o_data_next = data_reg[8:1];
+                            }
+                        } else {
+                            data_reg_next = {i_rx, data_reg[8:1]};
+                        }
+                    }
                     wait_count_next += 1;
                 }
             }
