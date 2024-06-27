@@ -2,8 +2,8 @@ pub module Rx #(
     param CLOCK_FREQUENCY: logic<30> = 32'd50000000,
     param BAUD_RATE      : logic<30> = 32'd115200  ,
 ) (
-    i_clk   : input  logic   ,
-    i_rst   : input  logic   ,
+    i_clk   : input  clock   ,
+    i_rst   : input  reset   ,
     i_en    : input  logic   ,
     i_rx    : input  logic   ,
     o_data  : output logic<8>,
@@ -37,45 +37,45 @@ pub module Rx #(
         o_data_next     = o_data;
         case status {
             Status::idle: {
-                if i_en && i_rx == 0 {
-                    o_busy_next = 1;
-                    status_next = Status::receive;
-                }
-            }
+                              if i_en && i_rx == 0 {
+                                  o_busy_next = 1;
+                                  status_next = Status::receive;
+                              }
+                          }
             Status::receive: {
-                if wait_count >= wait_div {
-                    if bit_count >= 9 {
-                        if o_finish {
-                            o_busy_next     = 0;
-                            o_finish_next   = 0;
-                            wait_count_next = 0;
-                            status_next     = Status::idle;
-                            bit_count_next  = 0;
-                        } else if i_rx == 1 {
-                            o_finish_next = 1;
-                        }
-                    } else {
-                        status_next     =  Status::receive;
-                        bit_count_next  += 1;
-                        wait_count_next =  0;
-                    }
-                } else {
-                    if wait_count == (wait_div / 2) {
-                        if bit_count >= 9 {
-                            if i_rx == 1 {
-                                o_data_next = data_reg[8:1];
-                            }
-                        } else {
-                            data_reg_next = {i_rx, data_reg[8:1]};
-                        }
-                    }
-                    wait_count_next += 1;
-                }
-            }
+                                 if wait_count >= wait_div {
+                                     if bit_count >= 9 {
+                                         if o_finish {
+                                             o_busy_next     = 0;
+                                             o_finish_next   = 0;
+                                             wait_count_next = 0;
+                                             status_next     = Status::idle;
+                                             bit_count_next  = 0;
+                                         } else if i_rx == 1 {
+                                             o_finish_next = 1;
+                                         }
+                                     } else {
+                                         status_next     =  Status::receive;
+                                         bit_count_next  += 1;
+                                         wait_count_next =  0;
+                                     }
+                                 } else {
+                                     if wait_count == (wait_div / 2) {
+                                         if bit_count >= 9 {
+                                             if i_rx == 1 {
+                                                 o_data_next = data_reg[8:1];
+                                             }
+                                         } else {
+                                             data_reg_next = {i_rx, data_reg[8:1]};
+                                         }
+                                     }
+                                     wait_count_next += 1;
+                                 }
+                             }
         }
     }
 
-    always_ff (posedge i_clk, async_high i_rst) {
+    always_ff (i_clk, i_rst) {
         if_reset {
             status     = Status::idle;
             wait_count = 0;

@@ -1,10 +1,9 @@
 pub module Tx #(
     param CLOCK_FREQUENCY: logic<30> = 32'd50000000,
     param BAUD_RATE      : logic<30> = 32'd115200  ,
-
 ) (
-    i_clk   : input  logic   ,
-    i_rst   : input  logic   ,
+    i_clk   : input  clock   ,
+    i_rst   : input  reset   ,
     i_en    : input  logic   ,
     i_data  : input  logic<8>,
     o_tx    : output logic   ,
@@ -38,46 +37,46 @@ pub module Tx #(
         o_finish_next   = o_finish;
         case status {
             Status::idle: {
-                if i_en {
-                    if wait_count == wait_div {
-                        wait_count_next = 0;
-                        if bit_count == 9 {
-                            o_busy_next    = 1;
-                            status_next    = Status::send;
-                            data_buf_next  = {1'b1, i_data, 1'b0};
-                            bit_count_next = 0;
-                        } else {
-                            data_buf_next  =  {10'h3ff};
-                            bit_count_next += 1;
-                        }
-                    } else {
-                        wait_count_next += 1;
-                    }
-                }
-            }
+                              if i_en {
+                                  if wait_count == wait_div {
+                                      wait_count_next = 0;
+                                      if bit_count == 9 {
+                                          o_busy_next    = 1;
+                                          status_next    = Status::send;
+                                          data_buf_next  = {1'b1, i_data, 1'b0};
+                                          bit_count_next = 0;
+                                      } else {
+                                          data_buf_next  =  {10'h3ff};
+                                          bit_count_next += 1;
+                                      }
+                                  } else {
+                                      wait_count_next += 1;
+                                  }
+                              }
+                          }
             Status::send: {
-                if wait_count == wait_div {
-                    wait_count_next =  0;
-                    bit_count_next  += 1;
-                    if bit_count == 10 {
-                        o_finish_next  = 0;
-                        status_next    = Status::idle;
-                        bit_count_next = 0;
-                    } else if bit_count == 9 {
-                        o_finish_next = 1;
-                        o_busy_next   = 0;
-                    } else {
-                        status_next   = Status::send;
-                        data_buf_next = {1'b1, data_buf[9:1]};
-                    }
-                } else {
-                    wait_count_next += 1;
-                }
-            }
+                              if wait_count == wait_div {
+                                  wait_count_next =  0;
+                                  bit_count_next  += 1;
+                                  if bit_count == 10 {
+                                      o_finish_next  = 0;
+                                      status_next    = Status::idle;
+                                      bit_count_next = 0;
+                                  } else if bit_count == 9 {
+                                      o_finish_next = 1;
+                                      o_busy_next   = 0;
+                                  } else {
+                                      status_next   = Status::send;
+                                      data_buf_next = {1'b1, data_buf[9:1]};
+                                  }
+                              } else {
+                                  wait_count_next += 1;
+                              }
+                          }
         }
     }
 
-    always_ff (posedge i_clk, async_high i_rst) {
+    always_ff (i_clk, i_rst) {
         if_reset {
             status     = Status::idle;
             wait_count = 0;

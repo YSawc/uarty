@@ -1,6 +1,6 @@
 pub module Rts (
-    i_clk   : input  logic,
-    i_rst   : input  logic,
+    i_clk   : input  clock,
+    i_rst   : input  reset,
     i_en    : input  logic,
     o_rts   : output logic,
     o_busy  : output logic,
@@ -12,41 +12,44 @@ pub module Rts (
     }
     var status       : Status;
     var status_next  : Status;
-    var busy_next    : logic ;
+    var o_busy_next  : logic ;
     var o_finish_next: logic ;
     var o_rts_next   : logic ;
 
     always_comb {
         status_next   = status;
+        o_busy_next   = o_busy;
         o_finish_next = o_finish;
         o_rts_next    = o_rts;
         case status {
             Status::disable: {
-                if i_en {
-                    status_next = Status::enable;
-                    busy_next   = 1;
-                    o_rts_next  = 0;
-                }
-            }
+                                 if i_en {
+                                     status_next = Status::enable;
+                                     o_busy_next = 1;
+                                     o_rts_next  = 0;
+                                 }
+                             }
             Status::enable: {
-                if !i_en {
-                    status_next   = Status::disable;
-                    o_rts_next    = 1;
-                    busy_next     = 0;
-                    o_finish_next = 1;
-                }
-            }
+                                if !i_en {
+                                    status_next   = Status::disable;
+                                    o_rts_next    = 1;
+                                    o_busy_next   = 0;
+                                    o_finish_next = 1;
+                                }
+                            }
         }
     }
 
-    always_ff (posedge i_clk, async_high i_rst) {
+    always_ff (i_clk, i_rst) {
         if_reset {
             status   = Status::disable;
             o_rts    = 1;
+            o_busy   = 0;
             o_finish = 0;
         } else {
             status   = status_next;
             o_rts    = o_rts_next;
+            o_busy   = o_busy_next;
             o_finish = o_finish_next;
         }
     }
